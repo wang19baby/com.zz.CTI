@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+    	http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd
+    	http://xmlns.oracle.com/weblogic/weblogic-web-app
+    	http://xmlns.oracle.com/weblogic/weblogic-web-app/1.2/weblogic-web-app.xsd">
+    <context-root>com.zz.CTI</context-root>
+    <container-descriptor>
+    	<!-- 每隔1秒检查servlet是否被修改并需要重新编译。这里建议修改为-1，表示永不检查 -->
+    	<servlet-reload-check-secs>-1</servlet-reload-check-secs>
+    	<!-- WEB-INF下的jar优先 -->
+        <prefer-web-inf-classes>true</prefer-web-inf-classes>
+        <show-archived-real-path-enabled>true</show-archived-real-path-enabled>
+    </container-descriptor>
+    <jsp-descriptor>
+    	<!-- 是否让编译jsp文件产生的.java文件持续存在，如果设置为true，就可以在部署的环境查看jsp产生的.java文件，方便调试错误 -->
+        <keepgenerated>false</keepgenerated>  
+        <page-check-seconds>-1</page-check-seconds>  
+        <verbose>true</verbose>  
+        <debug>true</debug>  
+    </jsp-descriptor>
+</weblogic-web-app>

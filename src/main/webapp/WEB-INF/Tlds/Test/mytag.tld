@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>   
+<taglib>   
+   <tlibversion>1.0</tlibversion>
+   <jspversion>1.1</jspversion> 
+  <tag>   
+    <name>displayDate</name>   
+    <tagclass>com.zz.CTI.Util.TagUtil.Test.DateTagNoBody</tagclass>
+    <bodycontent>empty</bodycontent>    <!-- 标签体之间的内容要为空 -->  
+  </tag>  
+  <tag>   
+    <name>displayDateTwo</name>   
+    <tagclass>com.zz.CTI.Util.TagUtil.Test.DateTagAttribute</tagclass>
+    <bodycontent>empty</bodycontent>   <!-- 标签体之间的内容要为空   --> 
+	<!-- 定义属性   -->
+    <attribute>    
+       <name>pattern</name> <!-- 属性名字 -->    
+       <type>String</type>  <!-- 属性类型  -->   
+       <requried>false</requried> <!-- 是否必须 -->    
+       <rtexprvale>false</rtexprvale> <!-- 表示是否可以使用JSP表达式  -->    
+  </attribute>    
+  </tag>         
+  <tag>   
+    <name>iterator</name>   
+    <tagclass>com.zz.CTI.Util.TagUtil.Test.BodyTag</tagclass>
+    <bodycontent>jsp</bodycontent>   
+ 	<!-- 定义属性  -->  
+    <attribute>   
+       <name>count</name> <!-- 属性名字 -->
+       <type>int</type>  <!-- 属性类型 -->   
+       <requried>false</requried> <!-- 是否必须   --> 
+       <rtexprvale>false</rtexprvale> <!-- 表示是否可以使用JSP表达式  -->
+  </attribute>   
+  </tag>
+</taglib>   

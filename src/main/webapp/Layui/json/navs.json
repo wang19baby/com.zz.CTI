@@ -1,0 +1,87 @@
+{
+	"contentManagement": [
+		{
+			"title": "语音通话",
+			"icon": "&#xe63b;",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "通话记录",
+					"href": "/com.zz.CTI/page/callRecordInfoList",
+					"spread": false
+				},
+				{
+					"title": "语音通话",
+					"href": "/com.zz.CTI/page/callOut",
+					"spread": false
+				}
+			]
+		},
+		{
+			"title": "录音回放",
+			"icon": "&#xe6fc;",
+			"href": "/com.zz.CTI/page/recordList",
+			"spread": false
+		},
+		{
+			"title": "坐席班组",
+			"icon": "icon-icon10",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "班组坐席",
+					"href": "/com.zz.CTI/page/agentByGroup",
+					"spread": false
+				},
+				{
+					"title": "坐席列表",
+					"href": "/com.zz.CTI/page/agentInfo",
+					"spread": false
+				}
+			]
+		},
+		{
+			"title": "账号管理",
+			"icon": "icon-icon10",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "用户列表",
+					"href": "/com.zz.CTI/page/agentList",
+					"spread": false
+				},
+				{
+					"title": "增加用户",
+					"href": "/com.zz.CTI/page/addAgent",
+					"spread": false
+				}
+			]
+		},
+		{
+			"title": "其他页面",
+			"icon": "&#xe630;",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "404页面",
+					"icon": "&#xe61c;",
+					"href": "/com.zz.CTI/page/notFound",
+					"spread": false
+				},
+				{
+					"title": "登录",
+					"icon": "&#xe609;",
+					"href": "/com.zz.CTI/sys/login",
+					"spread": false,
+					"target": "_blank"
+				}
+			]
+		}
+	]
+}
+
+

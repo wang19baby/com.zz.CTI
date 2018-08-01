@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zz.CTI.dao.AgentUserDao">
+	<!-- 查询部门 -->
+	<select id="getDepts" resultType="com.zz.CTI.Bean.Dept">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_Dept]
+	</select>
+
+	<!-- 根据员工号查询账号基本配置信息 -->
+	<select id="getAgentUserByUserNo" parameterType="String" resultType="com.zz.CTI.Bean.AgentUser">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentUser]
+		WHERE
+		[USER_NO] = #{userNo}
+	</select>
+	
+	<!--查询用户列表页数（分页）-->
+    <select id="getAgentUsersPageSum" parameterType="Map" resultType="java.lang.Long">
+        SELECT 
+        	COUNT(*)
+  		FROM [Message].[dbo].[CTI_AgentUser]
+  		<choose>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 查询条件为空 -->
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 员工号不为空 -->
+                WHERE [USER_NO] = #{userNo}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 员工号、坐席号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} 
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 员工号、姓名不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NAME] = #{workName} 
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 坐席号不为空 -->
+                WHERE [WORK_NO] = #{workNo}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 姓名不为空 -->
+                WHERE [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') 
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 坐席号、姓名不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%')
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门不为空 -->
+                WHERE [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、坐席号不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、姓名不为空 -->
+                WHERE [DEPT_ID] = #{deptId} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%')
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号、坐席号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号、姓名不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId} 
+            </when>
+           	<when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、坐席号、姓名不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId} 
+            </when>
+            <otherwise>
+            	 WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId}
+            </otherwise>
+        </choose>
+    </select>
+	
+	<!--查询用户列表（分页）-->
+    <select id="getAgentUsers" parameterType="Map" resultType="com.zz.CTI.Bean.AgentUser">
+        SELECT *
+  		FROM [Message].[dbo].[CTI_AgentUser]
+  		<choose>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 查询条件为空 -->
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 员工号不为空 -->
+                WHERE [USER_NO] = #{userNo}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 员工号、坐席号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} 
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 员工号、姓名不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NAME] = #{workName} 
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId == null || deptId == '')">
+            	<!-- 坐席号不为空 -->
+                WHERE [WORK_NO] = #{workNo}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 姓名不为空 -->
+                WHERE [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') 
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName != null and workName != '') and (deptId == null || deptId == '')">
+            	<!-- 坐席号、姓名不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%')
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门不为空 -->
+                WHERE [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、坐席号不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo == null || userNo == '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、姓名不为空 -->
+                WHERE [DEPT_ID] = #{deptId} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%')
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo != null and workNo != '') and (workName == null || workName == '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号、坐席号不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} AND [DEPT_ID] = #{deptId}
+            </when>
+            <when test="(userNo != null and userNo != '') and (workNo == null || workNo == '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、员工号、姓名不为空 -->
+                WHERE [USER_NO] = #{userNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId} 
+            </when>
+           	<when test="(userNo == null || userNo == '') and (workNo != null and workNo != '') and (workName != null and workName != '') and (deptId != null and deptId != '')">
+            	<!-- 部门、坐席号、姓名不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId} 
+            </when>
+            <otherwise>
+            	 WHERE [USER_NO] = #{userNo} AND [WORK_NO] = #{workNo} AND [WORK_NAME] LIKE CONCAT('%', #{workName}, '%') AND [DEPT_ID] = #{deptId}
+            </otherwise>
+        </choose>
+        ORDER BY [USER_NO] DESC
+        OFFSET　(#{page}-1)*#{limit} ROW  FETCH NEXT #{limit} ROWS ONLY
+    </select>
+    
+    	
+	<!-- 增加坐席 -->
+	<insert id="addAgent" parameterType="com.zz.CTI.Bean.AgentUser">
+       	INSERT INTO 
+  		[Message].[dbo].[CTI_AgentUser] (
+  			[USER_NO],
+			[WORK_NO],
+			[WORK_NAME],
+			[PHONE_NUMBER],
+			[DEPT_ID],
+			[AGENT_PROFILE],
+			[ROLE_ID]
+      	) VALUES (
+      		#{userNo},
+      		#{workNo},
+      		#{workName},
+      		#{phoneNumber},
+      		#{dept.deptId},
+      		#{agentProfile},
+      		#{agentRole.roleId}
+      	)
+	</insert>
+	
+	<!-- 增加坐席-权限关联 -->
+	<insert id="addAgentPermission" parameterType="com.zz.CTI.Bean.AgentUser">
+		INSERT INTO
+		[Message].[dbo].[CTI_AgentUser-AgentPermission] (
+			[USER_NO],
+			[PERMISSION_ID]
+		) VALUES
+		<foreach collection="agentPermissions" item="agentPermission" index="index" separator=",">
+			(
+      		#{userNo},
+      		#{agentPermission.permissionId}
+      		)
+		</foreach>
+	</insert>
+	
+<!-- 	<insert id="addAgentPermission" parameterType="com.zz.CTI.Bean.AgentUser"> -->
+<!-- 		<foreach collection="agentPermissions" item="agentPermission" index="index"> -->
+<!-- 			INSERT INTO -->
+<!-- 			[Message].[dbo].[CTI_AgentUser-AgentPermission] ( -->
+<!-- 				[WORK_NO], -->
+<!-- 				[PERMISSION_ID] -->
+<!-- 			) VALUES ( -->
+<!-- 	      		#{workNo}, -->
+<!-- 	      		#{agentPermission.permissionId} -->
+<!-- 	      	) -->
+<!-- 		</foreach> -->
+<!-- 	</insert> -->
+	
+    <!-- 删除用户 -->
+    <delete id="deleteAgent" parameterType="com.zz.CTI.Bean.AgentUser">
+    	DELETE 
+    	[Message].[dbo].[CTI_AgentUser] 
+    	WHERE [USER_NO] = #{userNo}
+    </delete>
+    
+    <!-- 根据员工号删除用户权限 -->
+    <delete id="deleteAgentPermissionByUserNo" parameterType="com.zz.CTI.Bean.AgentUser">
+    	DELETE 
+    	[Message].[dbo].[CTI_AgentUser-AgentPermission] 
+    	WHERE [USER_NO] = #{userNo}
+    </delete>
+    
+    <!-- 批量删除用户 -->
+    <delete id="deleteAgents" parameterType="java.util.List">
+    	DELETE 
+    	[Message].[dbo].[CTI_AgentUser] 
+    	WHERE [USER_NO] IN
+    	<foreach collection="list" item = "agentUser" open="(" separator="," close=")">
+    		#{agentUser.userNo} 
+    	</foreach>
+    </delete>
+    
+    <!-- 根据员工号批量删除用户权限 -->
+    <delete id="deleteAgentPermissionsByAgentUsers" parameterType="java.util.List">
+    	DELETE 
+    	[Message].[dbo].[CTI_AgentUser-AgentPermission] 
+    	WHERE [USER_NO] IN
+    	<foreach collection="list" item = "agentUser" open="(" separator="," close=")">
+    		#{agentUser.userNo} 
+    	</foreach>
+    </delete>
+    
+    <!-- 编辑用户 -->
+    <update id="editAgentUser" parameterType="com.zz.CTI.Bean.AgentUser">
+    	UPDATE 
+    	[Message].[dbo].[CTI_AgentUser]
+    	SET 
+	  		[WORK_NO] = #{workNo},
+	  		[WORK_NAME] = #{workName},
+	  		[PHONE_NUMBER] = #{phoneNumber},
+	  		[AGENT_PROFILE] = #{agentProfile},
+	  		[ROLE_ID] = #{agentRole.roleId},
+	  		[DEPT_ID] = #{dept.deptId}
+    	WHERE [USER_NO] = #{userNo}
+    </update>
+</mapper>  

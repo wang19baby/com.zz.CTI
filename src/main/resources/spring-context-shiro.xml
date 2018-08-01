@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 使用spring组件扫描@service  -->
+    <context:component-scan base-package="com.zz.CTI"/>
+    <!-- 自定义域realm -->
+    <bean id="custom_Realm" class="com.zz.CTI.Shiro.CustomRealm"></bean>
+    <!-- 安全管理器  ref对象-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="custom_Realm"/>
+        <!-- 配置sessionListener -->  
+        <property name="sessionManager" ref="sessionManager" />
+        <!-- 配置缓存管理器 -->
+        <property name="cacheManager" ref="cacheManager"/>
+    </bean>
+    
+    <!-- 自定义session监听器 -->  
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+    	<property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionListeners" ref="sessionListener" />
+        <!-- 定义的是全局的session会话超时时间，此操作会覆盖web.xml文件中的超时时间配置 3600000 -->
+        <property name="globalSessionTimeout" value="3600000"/>
+        <!-- 删除所有无效的Session对象，此时的session被保存在了内存里面 -->
+        <property name="deleteInvalidSessions" value="true"/>
+        <!-- 设置session的失效扫描间隔，单位为毫秒 -->
+        <property name="sessionValidationInterval" value="3600000"/>
+        <!-- 定时清理失效会话, 清理用户直接关闭浏览器造成的孤立会话   -->
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+    </bean>
+    <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.MemorySessionDAO"/>
+    <bean id="sessionListener" class="com.zz.CTI.Shiro.SessionListener"></bean>
+    
+    <!-- shiro filter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- 安全管理器必须的 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 身份认证失败   认证提交的地址 -->
+        <property name="loginUrl" value="/sys/login"/>
+        <!-- 登录成功默认跳转页面，不配置则跳转至”/”。如果登陆前点击的一个需要登录的页面，则在登录自动跳转到那个需要登录的页面。不跳转到此 -->
+        <property name="successUrl" value="/page/main"/>
+        <!-- 没有权限默认跳转的页面 -->
+        <property name="unauthorizedUrl" value="/sys/login"/>
+        <!-- Shiro连接约束配置,即过滤链的定义 -->
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 对静态资源设置匿名访问 -->
+                /test/** = anon
+                /sys/login = anon
+                /sys/forcelogin = anon
+                /Layui/** = anon <!--设置静态资源文件为游客可访问-->
+                /**  = authc <!-- 未登录请求拦截 -->
+            </value>
+        </property>
+    </bean>
+    
+    <!-- 缓存管理器 -->  
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">  
+        <property name="cacheManagerConfigFile" value="classpath:shiro-ehcache.xml"/>  
+    </bean>  
+    <!-- Shiro生命周期处理器 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
+    <!-- AOP式方法级权限检查  -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="true"/>
+    </bean>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+</beans>

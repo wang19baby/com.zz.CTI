@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zz.CTI.dao.CTIDao">
+	<!-- 查询错误结果说明 -->
+	<select id="getErrorMsg" parameterType="String" resultType="String">
+		SELECT
+		[Explain]
+		FROM
+		[Message].[dbo].[CTI_Error]
+		WHERE
+		[Result_code] = #{retcode}
+	</select>
+	
+	<!-- 插入通话记录 -->
+	<insert id="insertAgentCall" parameterType="com.zz.CTI.Bean.AgentCall">
+		<!-- 根据callId判断数据是否存在 -->
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT COUNT(*) FROM [Message].[dbo].[CTI_AgentCall] WHERE [CALL_ID] = #{callId}
+        </selectKey>
+        <if test="count==0">
+        	INSERT INTO 
+	  		[Message].[dbo].[CTI_AgentCall] (
+	  			[CALL_ID],
+	  			[USER_NO],
+	      		[WORK_NO],
+	      		[PHONE_NUMBER],
+	      		[OTHER_PHONE],
+	      		[DATE],
+	      		[TYPE],
+	      		[RESULT]
+	      	) VALUES (
+	      		#{callId},
+	      		#{userNo},
+	      		#{workNo},
+	      		#{phoneNumber},
+	      		#{otherPhone},
+	      		#{date}, 
+	      		#{type},
+	      		#{result}
+	      	)
+        </if>
+	</insert>
+	
+	<!--更新通讯记录 通话成功-->
+	<update id="updateAgentCall" parameterType="com.zz.CTI.Bean.AgentCall">
+		<!-- 根据callId判断数据是否存在 -->
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT COUNT(*) FROM [Message].[dbo].[CTI_AgentCall] WHERE [CALL_ID] = #{callId}
+        </selectKey>
+        <if test="count==1">
+        	UPDATE [Message].[dbo].[CTI_AgentCall]
+	  		SET 
+	      		[RESULT] = 1
+	      	WHERE 
+	      		[CALL_ID] = #{callId}
+        </if>
+	</update>
+	
+	<!-- 查询通讯记录总页数  -->
+    <select id="getCallRecordPageSum" parameterType="Map" resultType="java.lang.Long">
+        SELECT 
+        	COUNT(*)
+  		FROM [Message].[dbo].[CTI_AgentCall]
+  		<choose>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 查询条件为空 -->
+                WHERE [WORK_NO] = #{workNo}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 号码不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 号码、起始日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 号码、结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 起始日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate != null and startDate != '') and (endDate != null and endDate != '')">
+            	<!-- 起始、结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <otherwise>
+            	 WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate} 
+            	 AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </otherwise>
+        </choose>
+    </select>
+	
+	<!--查询自身通讯记录（分页）-->
+    <select id="getCallRecordList" parameterType="Map" resultType="com.zz.CTI.Bean.AgentCall">
+        SELECT *
+  		FROM [Message].[dbo].[CTI_AgentCall]
+  		<choose>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 查询条件为空 -->
+                WHERE [WORK_NO] = #{workNo}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 号码不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 号码、起始日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(otherPhone != null and otherPhone != '') and (startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 号码、结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 起始日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <when test="(otherPhone == null || otherPhone == '') and (startDate != null and startDate != '') and (endDate != null and endDate != '')">
+            	<!-- 起始、结束日期不为空 -->
+                WHERE [WORK_NO] = #{workNo} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate} AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <otherwise>
+            	 WHERE [WORK_NO] = #{workNo} AND [OTHER_PHONE] = #{otherPhone} AND LEFT([DATE],10) <![CDATA[ >= ]]> #{startDate} 
+            	 AND LEFT([DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </otherwise>
+        </choose>
+        ORDER BY [DATE] DESC
+        OFFSET　(#{page}-1)*#{limit} ROW  FETCH NEXT #{limit} ROWS ONLY
+    </select>
+    
+    <!-- 插入录音记录 -->
+	<insert id="insertAgentRecord" parameterType="com.zz.CTI.Bean.AgentRecord">
+		<!-- 根据recordId判断数据是否存在 -->
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT COUNT(*) FROM [Message].[dbo].[CTI_AgentRecord] WHERE [RECORD_ID] = #{recordId}
+        </selectKey>
+        <if test="count==0">
+        	INSERT INTO 
+	  		[Message].[dbo].[CTI_AgentRecord] (
+				[RECORD_ID],
+			    [CALL_ID],
+			    [USER_NO],
+			    [WORK_NO],
+			    [RECORD_TITLE],
+			    [LOCATION_ID],
+			    [RECORD_START_DATE],
+			    [RECORD_END_DATE],
+			    [FILE_NAME]
+	      	) VALUES (
+	      		#{recordId},
+	      		#{callId},
+	      		#{userNo},
+	      		#{workNo},
+	      		#{recordTitle},
+	      		#{locationId},
+	      		#{recordStartDate},
+	      		#{recordEndDate},
+	      		#{fileName}
+	      	)
+        </if>
+	</insert>
+	
+	<!--更新录音记录-->
+	<update id="updateAgentRecord" parameterType="com.zz.CTI.Bean.AgentRecord">
+		<!-- 根据callId判断数据是否存在 -->
+		<selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT COUNT(*) FROM [Message].[dbo].[CTI_AgentRecord] WHERE [RECORD_ID] = #{recordId}
+        </selectKey>
+        <if test="count==1">
+        	UPDATE [Message].[dbo].[CTI_AgentRecord]
+        	<choose>
+            <when test="recordEndDate == null || recordEndDate == ''">
+            	<!-- 结束时间为空 -->
+		  		SET 
+		      		[CALL_ID] = #{callId},
+		      		[RECORD_TITLE] = #{recordTitle}
+            </when>
+            <otherwise>
+		  		SET 
+		      		[CALL_ID] = #{callId},
+		      		[RECORD_TITLE] = #{recordTitle},
+		      		[RECORD_END_DATE] = #{recordEndDate}
+            </otherwise>
+        	</choose>
+        	WHERE [RECORD_ID] = #{recordId}
+        </if>
+	</update>
+	
+	<!-- 查询录音记录总页数  -->
+    <select id="getAgentRecordPageSum" parameterType="Map" resultType="java.lang.Long">
+        SELECT 
+        	COUNT(*)
+  		FROM [Message].[dbo].[CTI_AgentRecord]
+  		<choose>
+            <when test="(startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 查询条件为空 -->
+                WHERE [USER_NO] = #{userNo}
+            </when>
+            <when test="(startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 起始日期不为空 -->
+                WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_START_DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 结束日期不为空 -->
+                WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_END_DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <otherwise>
+            	 WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_START_DATE],10) <![CDATA[ >= ]]> #{startDate} AND LEFT([RECORD_END_DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </otherwise>
+        </choose>
+    </select>
+	
+	<!--查询自身录音记录（分页）-->
+    <select id="getAgentRecordList" parameterType="Map" resultType="com.zz.CTI.Bean.AgentRecord">
+        SELECT *
+  		FROM [Message].[dbo].[CTI_AgentRecord]
+  		<choose>
+            <when test="(startDate == null || startDate == '') and (endDate == null || endDate == '')">
+            	<!-- 查询条件为空 -->
+                WHERE [USER_NO] = #{userNo}
+            </when>
+            <when test="(startDate != null and startDate != '') and (endDate == null || endDate == '')">
+            	<!-- 起始日期不为空 -->
+                WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_START_DATE],10) <![CDATA[ >= ]]> #{startDate}
+            </when>
+            <when test="(startDate == null || startDate == '') and (endDate != null and endDate != '')">
+            	<!-- 结束日期不为空 -->
+                WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_END_DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </when>
+            <otherwise>
+            	 WHERE [USER_NO] = #{userNo} AND LEFT([RECORD_START_DATE],10) <![CDATA[ >= ]]> #{startDate} AND LEFT([RECORD_END_DATE],10) <![CDATA[ <= ]]> #{endDate}
+            </otherwise>
+        </choose>
+        ORDER BY [RECORD_START_DATE] DESC
+        OFFSET　(#{page}-1)*#{limit} ROW  FETCH NEXT #{limit} ROWS ONLY
+    </select>
+    
+    <!-- 根据录音流水号查询录音 -->
+	<select id="getAgentRecordByRecordId" parameterType="String" resultType="com.zz.CTI.Bean.AgentRecord">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentRecord]
+		WHERE
+		[RECORD_ID] = #{recordId}
+	</select>
+	
+	<!-- 根据员工号查询坐席 -->
+	<select id="getAgentUserByUserNo" parameterType="String" resultMap="AgentUserMap">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentUser]
+		WHERE
+		[USER_NO] = #{userNo}
+	</select>
+	
+	<resultMap type="com.zz.CTI.Bean.AgentUser" id="AgentUserMap">
+		<id column="USER_NO" property="userNo" />
+        <id column="WORK_NO" property="workNo" />  
+        <result column="WORK_NAME" property="workName" />
+        <result column="PHONE_NUMBER" property="phoneNumber" />
+        <result column="AGENT_PROFILE" property="agentProfile" />
+        <collection column="DEPT_ID" property="dept" select="getDeptByDeptId"/>
+	 	<collection column="ROLE_ID" property="agentRole" select="getAgentRoleByRoleId"/>
+	 	<collection column="USER_NO" property="agentPermissions" select="getAgentPermissionsByUserNo"/>
+    </resultMap>
+    
+    <!-- 根据部门ID查询部门 -->
+	<select id="getDeptByDeptId" parameterType="String" resultType="com.zz.CTI.Bean.Dept">
+		SELECT 
+			[DEPT_ID],
+      		[DEPT_NAME]
+		FROM
+		[Message].[dbo].[CTI_Dept]
+		WHERE
+		[DEPT_ID] = #{deptId}
+	</select>
+    
+   	<!-- 根据角色Id查询角色 -->
+	<select id="getAgentRoleByRoleId" parameterType="String" resultType="com.zz.CTI.Bean.AgentRole">
+		SELECT
+			[ROLE_ID],
+	      	[ROLE_TAG],
+	      	[ROLE_NAME]
+		FROM
+		[Message].[dbo].[CTI_AgentRole]
+		WHERE
+		[ROLE_ID] = #{roleId}
+	</select>
+	
+	<!-- 根据员工号查询权限 -->
+	<select id="getAgentPermissionsByUserNo" parameterType="String" resultType="com.zz.CTI.Bean.AgentPermission">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentPermission]
+		WHERE
+		[PERMISSION_ID] IN 
+		(SELECT [PERMISSION_ID] FROM [Message].[dbo].[CTI_AgentUser-AgentPermission] WHERE [USER_NO] = #{userNo})
+	</select>
+	
+	<!-- 查询角色 -->
+	<select id="getAgentRoles" resultType="com.zz.CTI.Bean.AgentRole">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentRole]
+	</select>
+	
+	<!-- 查询权限 -->
+	<select id="getAgentPermissions" resultType="com.zz.CTI.Bean.AgentPermission">
+		SELECT *
+		FROM
+		[Message].[dbo].[CTI_AgentPermission]
+	</select>
+</mapper>  
